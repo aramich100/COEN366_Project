@@ -2,6 +2,13 @@ import socket
 import time
 import os
 import sys
+#import tqdm
+
+def exitServer():
+    print("Server is exiting and closing this socket.")
+    s.close
+    sys.exit
+
 
 
 HOST = '0.0.0.0'
