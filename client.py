@@ -1,33 +1,44 @@
 import socket
-import sys
+import tqdm
+import os
 
-client_host = '0.0.0.0'
-client_port = 5556
+SEPARATOR = "<SEPARATOR>"
+BUFFER_SIZE = 4096  # send 4096 bytes each time step
 
-try:
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+# the ip address or hostname of the server, the receiver
+host = "172.30.119.48"
 
-except socket.error:
-    print("Failes to created socket")
-    sys.exit()
+# the port, let's use 5001
+port = 5001
 
-s.bind((client_host, client_port))
+# the name of file we want to send, make sure it exists
+filename = "t.txt"
+# get the file size
+filesize = os.path.getsize(filename)
 
-host = 'localhost'
-port = 5555
+# create the client socket
+s = socket.socket()
 
+print(f"[+] Connecting to {host}:{port}")
+s.connect((host, port))
+print("[+] Connected.")
 
-while (1):
-    msg = input('Enter message to send: ')
-    msg_bytes = str.encode(msg)
+# send the filename and filesize
+s.send(f"{filename}{SEPARATOR}{filesize}".encode())
 
-    try:
-        s.sendto(msg_bytes, (host, port))
-        d = s.recvfrom(1024)
-        reply = d[0]
-        addr = d[1]
-
-        print(reply)
-
-    except socket.error.msg_bytes:
-        print("Error")
+progress = tqdm.tqdm(range(
+    filesize), f"Sending {filename}", unit="B", unit_scale=True, unit_divisor=1024)
+with open(filename, "rb") as f:
+    while True:
+        # read the bytes from the file
+        bytes_read = f.read(BUFFER_SIZE)
+        if not bytes_read:
+            # file transmitting is done
+            break
+        # we use sendall to assure transimission in
+        # busy networks
+        s.sendall(bytes_read)
+        # update the progress bar
+        progress.update(len(bytes_read))
+# close the socket
+s.close()
