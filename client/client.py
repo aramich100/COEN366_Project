@@ -16,6 +16,7 @@ def main():
     while 1:
         data = client.recv(SIZE).decode(FORMAT)
         cmd, msg = data.split("@")
+        # REGISTER@RQ
 
         if cmd == "OK":
             print(f"{msg}")
@@ -25,7 +26,7 @@ def main():
             break
 
         data = input(">  ")
-        data = data.split("  ")
+        data = data.split(" ")
         cmd = data[0]
 
         if cmd == "HELP":
@@ -36,13 +37,25 @@ def main():
             break
 
         elif cmd == "LIST":
-            pass
+            client.send(cmd.encode(FORMAT))
 
         elif cmd == "UPLOAD":
-            pass
+            # UPLOAD FILE NAME
+            path = data[1]
+            with open(f"{path}", "r") as f:
+                text = f.read()
+
+            filename = path.split("/")[-1]
+            send_data = f"{cmd}@{filename}@{text}"
+            client.send(send_data.encode(FORMAT))
+
+        elif cmd == "REGISTERED":
+            send_data = cmd
+            print(f"{send_data}")
+            client.send(send_data.encode(FORMAT))
 
         elif cmd == "DELETE":
-            pass
+            client.send(f"{cmd}@{data[1]}".encode())
 
     print("Disconnected from the server. ")
     client.close()
