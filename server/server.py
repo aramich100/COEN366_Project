@@ -3,12 +3,12 @@ import socket
 import threading
 
 IP = socket.gethostbyname('127.0.0.1')  # LOCALHOST
-PORT = 4466
+PORT = 4467
 ADDR = (IP, PORT)
 SIZE = 1024
 FORMAT = "utf-8"
 
-SERVER_DATA_PATH = "server_data"
+SERVER_DATA_PATH = "./"
 
 
 def handle_client(conn, addr):
@@ -41,7 +41,7 @@ def handle_client(conn, addr):
 
         # List files in server
         elif cmd == "LIST":
-            files = os.listdir(SERVER_DATA_PATH)
+            files = os.listdir("./")
             send_data = "OK@"
             if len(files) == 0:
                 send_data += "The server directory is empty"
