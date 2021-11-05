@@ -49,9 +49,19 @@ def main():
             send_data = f"{cmd}@{filename}@{text}"
             client.send(send_data.encode(FORMAT))
 
-        elif cmd == "REGISTERED":
+        elif cmd == "REGISTER":
             send_data = cmd
-            print(f"{send_data}")
+            registerCmd = input("To register, enter: YourName IPaddress UDPsocket# TCPsocket#\n")
+            words = registerCmd.split()
+            clientName = words[0]
+            #clientIP = words[1]
+            #clientUDP = words[2]
+            #clientTCP = words[3]
+
+            #print(clientName)
+            send_data += "@"+clientName
+            #print(f"{send_data}")
+            
             client.send(send_data.encode(FORMAT))
 
         elif cmd == "DELETE":

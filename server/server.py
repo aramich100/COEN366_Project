@@ -1,9 +1,10 @@
 import os
 import socket
 import threading
+import string
 
 IP = socket.gethostbyname('127.0.0.1')  # LOCALHOST
-PORT = 4467
+PORT = 4466
 ADDR = (IP, PORT)
 SIZE = 1024
 FORMAT = "utf-8"
@@ -16,9 +17,13 @@ def handle_client(conn, addr):
     print(f"[NEW CONNECTION] {addr} connected. ")
 
     # Sends OK Command to client
-    conn.send("OK@Welcome to the File Server ".encode(FORMAT))
+    conn.send("OK@Welcome to the COEN366 Project Terminal. First, you will need to register. Enter the command: REGISTER".encode(FORMAT))
+    
+    clientCount = 0
 
     while 1:
+        
+
         data = conn.recv(SIZE).decode(FORMAT)
         data = data.split("@")
 
@@ -56,20 +61,22 @@ def handle_client(conn, addr):
             files = os.listdir(SERVER_DATA_PATH)
             send_data = "OK@"
             filename = data[1]
-
             if len(files) == 0:
                 send_data += "The server directory is empty"
             else:
                 if filename in files:
                     os.system(f"rm{SERVER_DATA_PATH}/{filename}")
 
-        elif cmd == "REGISTERED":
+        elif cmd == "REGISTER":
+            clientCount += 1
             send_data = "OK@"
-            send_data += "Registered succesfully"
-            print("Registered succesfully")
+            send_data += "Registered successfully"
+            name = data[1]
+            print("Client ",clientCount,":",name, " has registered succesfully!")
             conn.send(send_data.encode(FORMAT))
+            
 
-    print(f"[DISCONNECTED] {addr} disconencted")
+    print(f"[DISCONNECTED] {addr} disconnected")
 
 
 def main():
