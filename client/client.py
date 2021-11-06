@@ -10,8 +10,45 @@ FORMAT = "utf-8"
 
 
 def main():
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client.connect(ADDR)
+    print(" -- WELCOME CLIENT --")
+
+    while 1:
+        print(" Please enter a command. ")
+        inInput = input(">>  ")
+
+        #ADR = ("127.0.0.1", 4455)
+        #admin = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # admin.connect(ADR)
+
+        if inInput == "REGISTER":
+            name = input("Name :  ")
+            IP = input("IP :  ")
+            UDPPort = int(input("UDP Port : "))
+            TCPPort = int(input("TCP Port : "))
+            ADR = (IP, TCPPort)
+            client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            client.connect(ADR)
+
+            send_data = "REGISTER"
+            send_data += "@"+name
+            send_data += "@"+str(IP)
+            send_data += "@"+str(UDPPort)
+            send_data += "@"+str(TCPPort)
+
+            client.send(send_data.encode(FORMAT))
+
+            print(" Please enter a command. ")
+            inInput = input(">>  ")
+            if inInput == "DE-REGISTER":
+                name = input("Name :  ")
+                send_data = "DE-REGISTER"
+                send_data += "@"+name
+                client.send(send_data.encode(FORMAT))
+                client.close()
+
+    #client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    # client.connect(ADDR)
 
     while 1:
         data = client.recv(SIZE).decode(FORMAT)
@@ -51,17 +88,18 @@ def main():
 
         elif cmd == "REGISTER":
             send_data = cmd
-            registerCmd = input("To register, enter: YourName IPaddress UDPsocket# TCPsocket#\n")
+            registerCmd = input(
+                "To register, enter: YourName IPaddress UDPsocket# TCPsocket#\n")
             words = registerCmd.split()
             clientName = words[0]
             #clientIP = words[1]
             #clientUDP = words[2]
             #clientTCP = words[3]
 
-            #print(clientName)
+            # print(clientName)
             send_data += "@"+clientName
-            #print(f"{send_data}")
-            
+            # print(f"{send_data}")
+
             client.send(send_data.encode(FORMAT))
 
         elif cmd == "DELETE":

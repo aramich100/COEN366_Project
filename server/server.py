@@ -4,12 +4,18 @@ import threading
 import string
 
 IP = socket.gethostbyname('127.0.0.1')  # LOCALHOST
-PORT = 4466
+PORT = 4455
 ADDR = (IP, PORT)
 SIZE = 1024
 FORMAT = "utf-8"
 
+clients = []
+
 SERVER_DATA_PATH = "./"
+
+
+def getRQ(conn):
+    return 5555
 
 
 def handle_client(conn, addr):
@@ -18,12 +24,10 @@ def handle_client(conn, addr):
 
     # Sends OK Command to client
     conn.send("OK@Welcome to the COEN366 Project Terminal. First, you will need to register. Enter the command: REGISTER".encode(FORMAT))
-    
+
     clientCount = 0
 
     while 1:
-        
-
         data = conn.recv(SIZE).decode(FORMAT)
         data = data.split("@")
 
@@ -72,9 +76,27 @@ def handle_client(conn, addr):
             send_data = "OK@"
             send_data += "Registered successfully"
             name = data[1]
-            print("Client ",clientCount,":",name, " has registered succesfully!")
+            IP = data[2]
+            UDP = data[3]
+            TCP = data[4]
+            # print("Client ", clientCount, ":", name,
+            #    " has registered succesfully! \n")
+            # print(data[0], ' ', data[1], ' ',
+            #     data[2], ' ', data[3], ' ', data[4])
             conn.send(send_data.encode(FORMAT))
-            
+            clientString = str(data[1])
+            clients.append(clientString)
+
+        elif cmd == "DE-REGISTER":
+            name = data[1]
+            # print("de-register")
+            if name in clients:
+                clients.remove(name)
+                # print("[DISCONNECTED] ", name,
+                #     "has succesfully been disconnected !")
+                break
+            else:
+                print("That client is not connected. Please try again !")
 
     print(f"[DISCONNECTED] {addr} disconnected")
 
