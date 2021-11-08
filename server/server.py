@@ -3,8 +3,10 @@ import socket
 import threading
 import string
 
+from colorama import Fore, Back, Style
+
 IP = socket.gethostbyname('127.0.0.1')  # LOCALHOST
-PORT = 4455
+PORT = 4444
 ADDR = (IP, PORT)
 SIZE = 1024
 FORMAT = "utf-8"
@@ -20,19 +22,16 @@ def getRQ(conn):
 
 def handle_client(conn, addr):
     # Server Acknolowdges new connection
-    print(f"[NEW CONNECTION] {addr} connected. ")
+    print(f" 🚨 [ NEW CONNECTION ] {addr} connected. ")
 
     # Sends OK Command to client
-    conn.send("OK@Welcome to the COEN366 Project Terminal. First, you will need to register. Enter the command: REGISTER".encode(FORMAT))
+    # conn.send("OK@Welcome to the COEN366 Project Terminal. First, you will need to register. Enter the command: REGISTER".encode(FORMAT))
 
     clientCount = 0
 
     while 1:
         data = conn.recv(SIZE).decode(FORMAT)
         data = data.split("@")
-
-        # CMD@MSG
-        # data[0] = CMD
         cmd = data[0]
 
         if cmd == "HELP":
@@ -43,10 +42,6 @@ def handle_client(conn, addr):
             send_data += "DISC : Disconnect from the server \n"
             send_data += "HELP : List all the commands. \n"
             conn.send(send_data.encode(FORMAT))
-
-        # Disconnect client from server
-        elif cmd == "DISC":
-            break
 
         # List files in server
         elif cmd == "LIST":
@@ -74,39 +69,41 @@ def handle_client(conn, addr):
         elif cmd == "REGISTER":
             clientCount += 1
             send_data = "OK@"
-            send_data += "Registered successfully"
+            send_data += "REGISTERED SUCCESSFULLY"
             name = data[1]
             IP = data[2]
             UDP = data[3]
             TCP = data[4]
-            # print("Client ", clientCount, ":", name,
-            #    " has registered succesfully! \n")
-            # print(data[0], ' ', data[1], ' ',
-            #     data[2], ' ', data[3], ' ', data[4])
             conn.send(send_data.encode(FORMAT))
             clientString = str(data[1])
+            # Adds client to list
             clients.append(clientString)
 
         elif cmd == "DE-REGISTER":
-            name = data[1]
-            # print("de-register")
+            clientCount -= 1
+
             if name in clients:
                 clients.remove(name)
-                # print("[DISCONNECTED] ", name,
-                #     "has succesfully been disconnected !")
+                send_data = "OK@"
+                send_data += "De-Registered successfully"
+                name = data[1]
+                conn.send(send_data.encode(FORMAT))
                 break
             else:
                 print("That client is not connected. Please try again !")
+                send_data = "NO@"
+                conn.send(send_data.encode(FORMAT))
 
     print(f"[DISCONNECTED] {addr} disconnected")
 
 
 def main():
+    print('\033[1m', Fore.CYAN + " \n \n - 💻 - WELCOME SERVER  - 💻 - \n \n")
     print("[STARTING] Server is starting. ")
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind(ADDR)
     server.listen()
-    print("[Listening] Server is listening. ")
+    print("[Listening] Server is listening. \n \n")
 
     while 1:
         conn, addr = server.accept()
