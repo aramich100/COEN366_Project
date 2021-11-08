@@ -43,61 +43,91 @@ def main():
 
             data = client.recv(SIZE).decode(FORMAT)
             cmd, msg = data.split("@")
+
             # REGISTER@RQ
+            if cmd == "RD":
+                print(Fore.RED + "\n  " + msg)
+                print(Style.RESET_ALL)
 
             if cmd == "OK":
                 print()
                 print(Fore.GREEN + msg)
                 print(Style.RESET_ALL)
+                while 1:
+                    # If server replied "OK" :
+                    print(" \n Please enter a command. ")
+                    inInput = input("  ⫸    ")
+                    if inInput == "DE-REGISTER":
+                        name = input("Name :  ")
+                        send_data = "DE-REGISTER"
+                        send_data += "@"+name
+                        client.send(send_data.encode(FORMAT))
+                        data = client.recv(SIZE).decode(FORMAT)
+                        cmd, msg = data.split("@")
+                        if cmd == "OK":
+                            client.close()
+                            break
+
+                    elif inInput == "PUBLISH":
+                        name = input("Name : ")
+                        send_data = "PUBLISH@" + name
+                        client.send(send_data.encode(FORMAT))
+                        print("Waiting for reply..")
+                        data = client.recv(SIZE).decode(FORMAT)
+                        if(data == "OKCLIENT"):
+                            print("Client good")
+
+                        listOfFiles = []
+                        fileCount = 0
+                        print("Enter the desired file name and extension (file.txt)")
+                        print("Enter 0 when you have completed entering all files.")
+                        while 1:
+                            fileName = input("/ ")
+                            if fileName == "0":
+                                print(Fore.BLUE +
+                                      "\n Total Files Selected : ", fileCount)
+                                print(Style.RESET_ALL)
+                                break
+
+                            listOfFiles.append(fileName)
+                            fileCount += 1
+
+                        for p in listOfFiles:
+                            print("1")
+                            with open(f"{p}", "r") as f:
+                                text = f.read()
+                                print("2")
+                            filename = p.split("/")[-1]
+                            print("3")
+                            # Sends file to server
+                            send_data = f"{inInput}@{filename}@{text}"
+                            print("4")
+                            client.send(send_data.encode(FORMAT))
+                            print("5")
+                            data = client.recv(SIZE).decode(FORMAT)
+                            print("6")
+
+                            cmd, msg = data.split("@")
+                            print(cmd)
+                            if cmd == "OK":
+                                print(msg)
+
+                    # Lists available files
+                    elif inInput == "LIST":
+                        print()
+                        send_data = "LIST"
+                        client.send(send_data.encode(FORMAT))
+                        data = client.recv(SIZE).decode(FORMAT)
+                        cmd, msg = data.split("@")
+                        if cmd == "OK":
+                            # print("Files")
+                            print(f"{msg}")
+                        print()
+                        # else: break because user wasnt registered (DENIED)
 
             elif cmd == "DISCONNECTED":
                 print(f"{msg}")
                 break
-
-            while 1:
-                # If server replied "OK" :
-                print(" \n Please enter a command. ")
-                inInput = input("  ⫸    ")
-                if inInput == "DE-REGISTER":
-                    name = input("Name :  ")
-                    send_data = "DE-REGISTER"
-                    send_data += "@"+name
-                    client.send(send_data.encode(FORMAT))
-                    data = client.recv(SIZE).decode(FORMAT)
-                    cmd, msg = data.split("@")
-                    if cmd == "OK":
-                        client.close()
-
-                elif inInput == "PUBLISH":
-                    name = input("Name :  ")
-                    rq = input("RQ # :  ")
-                    listOfFiles = []
-                    fileCount = 0
-                    print("Enter the desired file name and extension (file.txt)")
-                    print("Enter 0 when you have completed entering all files.")
-                    while 1:
-                        fileName = input("/ ")
-                        if fileName == "0":
-                            print(Fore.BLUE +
-                                  "\n Total Files Selected : ", fileCount)
-                            print(Style.RESET_ALL)
-                            break
-
-                        listOfFiles.append(fileName)
-                        fileCount += 1
-
-                # Lists available files
-                elif inInput == "LIST":
-                    print()
-                    send_data = "LIST"
-                    client.send(send_data.encode(FORMAT))
-                    data = client.recv(SIZE).decode(FORMAT)
-                    cmd, msg = data.split("@")
-                    if cmd == "OK":
-                        # print("Files")
-                        print(f"{msg}")
-                    print()
-                    # else: break because user wasnt registered (DENIED)
 
     #client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 

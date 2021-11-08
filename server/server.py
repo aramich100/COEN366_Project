@@ -6,7 +6,7 @@ import string
 from colorama import Fore, Back, Style
 
 IP = socket.gethostbyname('127.0.0.1')  # LOCALHOST
-PORT = 4446
+PORT = 9999
 ADDR = (IP, PORT)
 SIZE = 1024
 FORMAT = "utf-8"
@@ -14,10 +14,6 @@ FORMAT = "utf-8"
 clients = []
 
 SERVER_DATA_PATH = "./"
-
-
-def getRQ(conn):
-    return 5555
 
 
 def handle_client(conn, addr):
@@ -56,14 +52,20 @@ def handle_client(conn, addr):
             pass
 
         elif cmd == "PUBLISH":
-            name, text = data[1], data[2]
-            filepath = os.path.join(SERVER_DATA_PATH, name)
-            with open(filepath, "w") as f:
-                f.write(text)
 
-            print("📁 File Received : ", filepath)
-            send_data = "OK@File Uploaded Succesfully"
-            conn.send(send_data.encode(FORMAT))
+            if data[1] in clients:
+                send_data = "OKCLIENT"
+                conn.send(send_data.encode(FORMAT))
+
+                data = conn.recv(SIZE).decode(FORMAT)
+                data = data.split("@")
+                name, text = data[1], data[2]
+                filepath = os.path.join(SERVER_DATA_PATH, name)
+                with open(filepath, "w") as f:
+                    f.write(text)
+                    print(" 📁 File Received : ", filepath)
+                    send_data = "OK@PUBLISHED #"+str(addr[1])
+                    conn.send(send_data.encode(FORMAT))
 
         elif cmd == "DELETE":
             files = os.listdir(SERVER_DATA_PATH)
@@ -98,6 +100,7 @@ def handle_client(conn, addr):
                 send_data += "REGISTER-DENIED  # " + \
                     str(addr[1]) + " Clients name is already in use. "
                 conn.send(send_data.encode(FORMAT))
+                clients.remove(data[1])
                 break
 
         elif cmd == "DE-REGISTER":
