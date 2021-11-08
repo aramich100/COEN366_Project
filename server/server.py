@@ -6,7 +6,7 @@ import string
 from colorama import Fore, Back, Style
 
 IP = socket.gethostbyname('127.0.0.1')  # LOCALHOST
-PORT = 4444
+PORT = 4446
 ADDR = (IP, PORT)
 SIZE = 1024
 FORMAT = "utf-8"
@@ -22,7 +22,6 @@ def getRQ(conn):
 
 def handle_client(conn, addr):
     # Server Acknolowdges new connection
-    print(f" 🚨 [ NEW CONNECTION ] {addr} connected. ")
 
     # Sends OK Command to client
     # conn.send("OK@Welcome to the COEN366 Project Terminal. First, you will need to register. Enter the command: REGISTER".encode(FORMAT))
@@ -56,6 +55,16 @@ def handle_client(conn, addr):
         elif cmd == "UPLOAD":
             pass
 
+        elif cmd == "PUBLISH":
+            name, text = data[1], data[2]
+            filepath = os.path.join(SERVER_DATA_PATH, name)
+            with open(filepath, "w") as f:
+                f.write(text)
+
+            print("📁 File Received : ", filepath)
+            send_data = "OK@File Uploaded Succesfully"
+            conn.send(send_data.encode(FORMAT))
+
         elif cmd == "DELETE":
             files = os.listdir(SERVER_DATA_PATH)
             send_data = "OK@"
@@ -68,16 +77,28 @@ def handle_client(conn, addr):
 
         elif cmd == "REGISTER":
             clientCount += 1
-            send_data = "OK@"
-            send_data += "REGISTERED SUCCESSFULLY"
-            name = data[1]
-            IP = data[2]
-            UDP = data[3]
-            TCP = data[4]
-            conn.send(send_data.encode(FORMAT))
-            clientString = str(data[1])
-            # Adds client to list
-            clients.append(clientString)
+            if data[1] not in clients:
+                send_data = "OK@"
+                send_data += "REGISTERED # " + str(addr[1])
+                conn.send(send_data.encode(FORMAT))
+
+                name = data[1]
+                IP = data[2]
+                UDP = data[3]
+                TCP = data[4]
+                print(f" 🚨 [ NEW CONNECTION ] {addr} connected. ")
+                print(data[0], ' ', '#', addr[1], ' ', data[1],
+                      ' ', data[2], ' ', data[3], ' ', data[4])
+                clientString = str(data[1])
+                # Adds client to list
+                clients.append(clientString)
+
+            else:
+                send_data = "RD@"
+                send_data += "REGISTER-DENIED  # " + \
+                    str(addr[1]) + " Clients name is already in use. "
+                conn.send(send_data.encode(FORMAT))
+                break
 
         elif cmd == "DE-REGISTER":
             clientCount -= 1
@@ -87,6 +108,7 @@ def handle_client(conn, addr):
                 send_data = "OK@"
                 send_data += "De-Registered successfully"
                 name = data[1]
+                print("[DE-REGISTERED] ", str(addr), " ", str(data[1]))
                 conn.send(send_data.encode(FORMAT))
                 break
             else:
