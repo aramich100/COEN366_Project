@@ -1,6 +1,8 @@
 import os
 import socket
 
+from colorama import Fore, Back, Style
+import emoji
 
 IP = socket.gethostbyname('127.0.0.1')
 PORT = 4466
@@ -10,17 +12,17 @@ FORMAT = "utf-8"
 
 
 def main():
-    print(" -- WELCOME CLIENT --")
+    # BOLD, EMOJI, COLOR
+    print('\033[1m', Fore.BLUE + " \n \n - 🍆 - WELCOME CLIENT  - 🍆 - \n \n")
 
     while 1:
+        print(Style.RESET_ALL)
         print(" Please enter a command. ")
-        inInput = input(">>  ")
+        inInput = input("  ⫸    ")
 
-        #ADR = ("127.0.0.1", 4455)
-        #admin = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # admin.connect(ADR)
-
+        # If Client is Registered or tries to
         if inInput == "REGISTER":
+            print()
             name = input("Name :  ")
             IP = input("IP :  ")
             UDPPort = int(input("UDP Port : "))
@@ -29,22 +31,73 @@ def main():
             client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             client.connect(ADR)
 
+            # Forming message to be sent to server
             send_data = "REGISTER"
             send_data += "@"+name
             send_data += "@"+str(IP)
             send_data += "@"+str(UDPPort)
             send_data += "@"+str(TCPPort)
 
+            # Sending message to server
             client.send(send_data.encode(FORMAT))
 
-            print(" Please enter a command. ")
-            inInput = input(">>  ")
-            if inInput == "DE-REGISTER":
-                name = input("Name :  ")
-                send_data = "DE-REGISTER"
-                send_data += "@"+name
-                client.send(send_data.encode(FORMAT))
-                client.close()
+            data = client.recv(SIZE).decode(FORMAT)
+            cmd, msg = data.split("@")
+            # REGISTER@RQ
+
+            if cmd == "OK":
+                print()
+                print(Fore.GREEN + msg)
+                print(Style.RESET_ALL)
+
+            elif cmd == "DISCONNECTED":
+                print(f"{msg}")
+                break
+
+            while 1:
+                # If server replied "OK" :
+                print(" \n Please enter a command. ")
+                inInput = input("  ⫸    ")
+                if inInput == "DE-REGISTER":
+                    name = input("Name :  ")
+                    send_data = "DE-REGISTER"
+                    send_data += "@"+name
+                    client.send(send_data.encode(FORMAT))
+                    data = client.recv(SIZE).decode(FORMAT)
+                    cmd, msg = data.split("@")
+                    if cmd == "OK":
+                        client.close()
+
+                elif inInput == "PUBLISH":
+                    name = input("Name :  ")
+                    rq = input("RQ # :  ")
+                    listOfFiles = []
+                    fileCount = 0
+                    print("Enter the desired file name and extension (file.txt)")
+                    print("Enter 0 when you have completed entering all files.")
+                    while 1:
+                        fileName = input("/ ")
+                        if fileName == "0":
+                            print(Fore.BLUE +
+                                  "\n Total Files Selected : ", fileCount)
+                            print(Style.RESET_ALL)
+                            break
+
+                        listOfFiles.append(fileName)
+                        fileCount += 1
+
+                # Lists available files
+                elif inInput == "LIST":
+                    print()
+                    send_data = "LIST"
+                    client.send(send_data.encode(FORMAT))
+                    data = client.recv(SIZE).decode(FORMAT)
+                    cmd, msg = data.split("@")
+                    if cmd == "OK":
+                        # print("Files")
+                        print(f"{msg}")
+                    print()
+                    # else: break because user wasnt registered (DENIED)
 
     #client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
