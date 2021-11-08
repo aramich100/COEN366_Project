@@ -70,47 +70,46 @@ def main():
 
                     elif inInput == "PUBLISH":
                         name = input("Name : ")
-                        send_data = "PUBLISH@" + name
+                        send_data = "PUBLISHREJ@"+name
                         client.send(send_data.encode(FORMAT))
-                        print("Waiting for reply..")
-                        data = client.recv(SIZE).decode(FORMAT)
-                        if(data == "OKCLIENT"):
-                            print("Client good")
+                        rejInfo = client.recv(SIZE).decode(FORMAT)
 
-                        listOfFiles = []
-                        fileCount = 0
-                        print("Enter the desired file name and extension (file.txt)")
-                        print("Enter 0 when you have completed entering all files.")
-                        while 1:
-                            fileName = input("/ ")
-                            if fileName == "0":
-                                print(Fore.BLUE +
-                                      "\n Total Files Selected : ", fileCount)
-                                print(Style.RESET_ALL)
-                                break
+                        if rejInfo == "GOOD":
 
-                            listOfFiles.append(fileName)
-                            fileCount += 1
+                            listOfFiles = []
+                            fileCount = 0
 
-                        for p in listOfFiles:
-                            print("1")
-                            with open(f"{p}", "r") as f:
-                                text = f.read()
-                                print("2")
-                            filename = p.split("/")[-1]
-                            print("3")
-                            # Sends file to server
-                            send_data = f"{inInput}@{filename}@{text}"
-                            print("4")
-                            client.send(send_data.encode(FORMAT))
-                            print("5")
-                            data = client.recv(SIZE).decode(FORMAT)
-                            print("6")
+                            print(
+                                "Enter the desired file name and extension (file.txt)")
+                            print(
+                                "Enter 0 when you have completed entering all files.")
 
-                            cmd, msg = data.split("@")
-                            print(cmd)
-                            if cmd == "OK":
-                                print(msg)
+                            while 1:
+                                fileName = input("/ ")
+                                if fileName == "0":
+                                    print(Fore.BLUE +
+                                          "\n Total Files Selected : ", fileCount)
+                                    print(Style.RESET_ALL)
+                                    break
+
+                                listOfFiles.append(fileName)
+                                fileCount += 1
+
+                            for p in listOfFiles:
+                                with open(f"{p}", "r") as f:
+                                    text = f.read()
+                                filename = p.split("/")[-1]
+                                # Sends file to server
+                                send_data = f"{inInput}@{filename}@{text}"
+                                client.send(send_data.encode(FORMAT))
+
+                                data = client.recv(SIZE).decode(FORMAT)
+                                cmd, msg = data.split("@")
+                                print(cmd)
+                                if cmd == "OK":
+                                    print(msg)
+                        else:
+                            print("PUBLISH-DENIED ")
 
                     # Lists available files
                     elif inInput == "LIST":

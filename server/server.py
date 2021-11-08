@@ -6,7 +6,7 @@ import string
 from colorama import Fore, Back, Style
 
 IP = socket.gethostbyname('127.0.0.1')  # LOCALHOST
-PORT = 9999
+PORT = 6666
 ADDR = (IP, PORT)
 SIZE = 1024
 FORMAT = "utf-8"
@@ -51,21 +51,26 @@ def handle_client(conn, addr):
         elif cmd == "UPLOAD":
             pass
 
+        elif cmd == "PUBLISHREJ":
+            name = data[1]
+
+            if name in clients:
+                send_data = "GOOD"
+
+            else:
+                send_data = "NOTOK"
+                print(" PUBLISH-DENIED ", addr[1])
+
+            conn.send(send_data.encode(FORMAT))
+
         elif cmd == "PUBLISH":
-
-            if data[1] in clients:
-                send_data = "OKCLIENT"
+            name, text = data[1], data[2]
+            filepath = os.path.join(SERVER_DATA_PATH, name)
+            with open(filepath, "w") as f:
+                f.write(text)
+                print(" 📁 File Received : ", filepath)
+                send_data = "OK@PUBLISHED #"+str(addr[1])
                 conn.send(send_data.encode(FORMAT))
-
-                data = conn.recv(SIZE).decode(FORMAT)
-                data = data.split("@")
-                name, text = data[1], data[2]
-                filepath = os.path.join(SERVER_DATA_PATH, name)
-                with open(filepath, "w") as f:
-                    f.write(text)
-                    print(" 📁 File Received : ", filepath)
-                    send_data = "OK@PUBLISHED #"+str(addr[1])
-                    conn.send(send_data.encode(FORMAT))
 
         elif cmd == "DELETE":
             files = os.listdir(SERVER_DATA_PATH)
