@@ -74,7 +74,9 @@ def main():
                         client.send(send_data.encode(FORMAT))
                         rejInfo = client.recv(SIZE).decode(FORMAT)
 
-                        if rejInfo == "GOOD":
+                        cmd, mess = rejInfo.split("@")
+
+                        if cmd == "GOOD":
 
                             listOfFiles = []
                             fileCount = 0
@@ -105,13 +107,54 @@ def main():
 
                                 data = client.recv(SIZE).decode(FORMAT)
                                 cmd, msg = data.split("@")
-                                print(cmd)
+
                                 if cmd == "OK":
                                     print(msg)
                         else:
-                            print("PUBLISH-DENIED ")
+                            print("PUBLISH-DENIED", mess)
 
-                    # Lists available files
+                    elif inInput == "REMOVE":
+                        name = input("Name : ")
+                        send_data = "REMOVEREJ@"+name
+                        client.send(send_data.encode(FORMAT))
+                        rejInfo = client.recv(SIZE).decode(FORMAT)
+
+                        cmd, mess = rejInfo.split("@")
+
+                        if cmd == "GOOD":
+                            listOfFiles = []
+                            fileCount = 0
+
+                            print(
+                                "Enter the desired file name and extension (file.txt)")
+                            print(
+                                "Enter 0 when you have completed entering all files.")
+
+                            while 1:
+                                fileName = input("/ ")
+                                if fileName == "0":
+                                    print(Fore.BLUE +
+                                          "\n Total Files Selected : ", fileCount)
+                                    print(Style.RESET_ALL)
+                                    break
+
+                                listOfFiles.append(fileName)
+                                fileCount += 1
+
+                            for p in listOfFiles:
+                                send_data = "REMOVE@"+str(p)
+                                client.send(send_data.encode(FORMAT))
+
+                                data = client.recv(SIZE).decode(FORMAT)
+
+                                cmd, msg = data.split("@")
+
+                                if cmd == "OK":
+                                    print(msg)
+
+                        else:
+                            print("REMOVE-DENIED #", mess)
+                        # Lists available files
                     elif inInput == "LIST":
                         print()
                         send_data = "LIST"
@@ -127,68 +170,6 @@ def main():
             elif cmd == "DISCONNECTED":
                 print(f"{msg}")
                 break
-
-    #client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-    # client.connect(ADDR)
-
-    while 1:
-        data = client.recv(SIZE).decode(FORMAT)
-        cmd, msg = data.split("@")
-        # REGISTER@RQ
-
-        if cmd == "OK":
-            print(f"{msg}")
-
-        elif cmd == "DISCONNECTED":
-            print(f"{msg}")
-            break
-
-        data = input(">  ")
-        data = data.split(" ")
-        cmd = data[0]
-
-        if cmd == "HELP":
-            client.send(cmd.encode(FORMAT))
-
-        elif cmd == "LOGOUT":
-            client.send(cmd.encode(FORMAT))
-            break
-
-        elif cmd == "LIST":
-            client.send(cmd.encode(FORMAT))
-
-        elif cmd == "UPLOAD":
-            # UPLOAD FILE NAME
-            path = data[1]
-            with open(f"{path}", "r") as f:
-                text = f.read()
-
-            filename = path.split("/")[-1]
-            send_data = f"{cmd}@{filename}@{text}"
-            client.send(send_data.encode(FORMAT))
-
-        elif cmd == "REGISTER":
-            send_data = cmd
-            registerCmd = input(
-                "To register, enter: YourName IPaddress UDPsocket# TCPsocket#\n")
-            words = registerCmd.split()
-            clientName = words[0]
-            #clientIP = words[1]
-            #clientUDP = words[2]
-            #clientTCP = words[3]
-
-            # print(clientName)
-            send_data += "@"+clientName
-            # print(f"{send_data}")
-
-            client.send(send_data.encode(FORMAT))
-
-        elif cmd == "DELETE":
-            client.send(f"{cmd}@{data[1]}".encode())
-
-    print("Disconnected from the server. ")
-    client.close()
 
 
 if __name__ == "__main__":

@@ -80,8 +80,6 @@ def handle_client(conn, addr):
                 conn.send(send_data.encode(FORMAT))
                 print(" REMOVE-DENIED #", addr[1])
 
-            conn.send(send_data.encode(FORMAT))
-
         elif cmd == "PUBLISH":
             name, text = data[1], data[2]
             filepath = os.path.join(SERVER_DATA_PATH, name)
