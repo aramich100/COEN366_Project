@@ -6,7 +6,7 @@ import string
 from colorama import Fore, Back, Style
 
 IP = socket.gethostbyname('127.0.0.1')  # LOCALHOST
-PORT = 6666
+PORT = 5555
 ADDR = (IP, PORT)
 SIZE = 1024
 FORMAT = "utf-8"
@@ -55,11 +55,30 @@ def handle_client(conn, addr):
             name = data[1]
 
             if name in clients:
-                send_data = "GOOD"
+                send_data = "GOOD@"
+                send_data += str(addr[1])
+                conn.send(send_data.encode(FORMAT))
 
             else:
-                send_data = "NOTOK"
-                print(" PUBLISH-DENIED ", addr[1])
+                send_data = "NOTOK@"
+                send_data += str(addr[1])
+
+                conn.send(send_data.encode(FORMAT))
+                print(" PUBLISH-DENIED #", addr[1])
+
+        elif cmd == "REMOVEREJ":
+            name = data[1]
+
+            if name in clients:
+                send_data = "GOOD@"
+                send_data += str(addr[1])
+                conn.send(send_data.encode(FORMAT))
+
+            else:
+                send_data = "NOTOK@"
+                send_data += str(addr[1])
+                conn.send(send_data.encode(FORMAT))
+                print(" REMOVE-DENIED #", addr[1])
 
             conn.send(send_data.encode(FORMAT))
 
@@ -72,16 +91,17 @@ def handle_client(conn, addr):
                 send_data = "OK@PUBLISHED #"+str(addr[1])
                 conn.send(send_data.encode(FORMAT))
 
-        elif cmd == "DELETE":
+        elif cmd == "REMOVE":
             files = os.listdir(SERVER_DATA_PATH)
             send_data = "OK@"
-            filename = data[1]
+            filename = str(data[1])
             if len(files) == 0:
                 send_data += "The server directory is empty"
             else:
                 if filename in files:
-                    os.system(f"rm{SERVER_DATA_PATH}/{filename}")
-
+                    os.remove("./"+filename)
+                    send_data += "REMOVED #"+str(addr[1])
+                    conn.send(send_data.encode(FORMAT))
         elif cmd == "REGISTER":
             clientCount += 1
             if data[1] not in clients:
