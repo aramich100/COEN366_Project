@@ -18,7 +18,16 @@ SERVER_DATA_PATH = "./"
 CLIENT_NAME = ""
 
 
-def handle_client(conn, addr):  # Handles client request and response
+def checkClient(name):  # Checks if client already exists
+    fileName = name+".txt"  # name + .txt
+    files = os.listdir("./db")  # List of files in directory
+    if fileName in files:
+        return True
+    else:
+        return False
+
+
+def handle_client(conn, addr):  # Handles client Thread (request and response)
     clientCount = 0
 
     while 1:
@@ -127,7 +136,7 @@ def handle_client(conn, addr):  # Handles client request and response
         elif cmd == "REGISTER":  # If the client command is REGISTER, frist thing the client does
             clientCount += 1  # Increment client count
             # If the clients Name doesnt already exist in the list of clients, register them
-            if data[1] not in clients:
+            if (not(checkClient(str(data[1])))):
                 send_data = "OK@"
                 # Send to the client that they registred with this unique rq number
                 send_data += "REGISTERED # " + str(addr[1])
