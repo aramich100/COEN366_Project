@@ -94,6 +94,19 @@ def main():
                         if cmd == "OK":
                             print(msg)
 
+                    elif inInput == "RETRIEVE-INFOT":
+                        send_data = "RETRIEVE-INFOT"
+                        name = input("Name :  ")
+                        # Sending to server
+                        send_data += "@"+name
+                        client.send(send_data.encode(FORMAT))
+
+                        data = client.recv(SIZE).decode(FORMAT)
+                        cmd, msg = data.split("@")
+
+                        if cmd == "OK":
+                            print("\n"+msg)
+
                     elif inInput == "PUBLISH":  # Publish a file
 
                         name = input("Name : ")

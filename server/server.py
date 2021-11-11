@@ -7,7 +7,7 @@ from colorama import Fore, Back, Style
 
 
 IP = socket.gethostbyname('127.0.0.1')  # Setting the IP adress of the socket
-PORT = 4455  # Setting the Port number (might change)
+PORT = 4444  # Setting the Port number (might change)
 ADDR = (IP, PORT)
 SIZE = 1024
 FORMAT = "utf-8"
@@ -46,9 +46,27 @@ def handle_client(conn, addr):  # Handles client Thread (request and response)
             send_data += "HELP : List all the commands. \n"
             conn.send(send_data.encode(FORMAT))
 
+        elif cmd == "RETRIEVE-INFOT":
+            files = os.listdir("./db")
+            l = len(files)
+            fileN = str(data[1])+".txt"
+            name = "./db/"+str(data[1])+".txt"
+            if fileN in files:
+                send_data = "OK@RETRIEVE-INFOT"+str(addr[1]) + " \n [ "
+                f = open(name, "r")
+                for x in f:
+                    send_data += (str(x.strip('\n')))
+                send_data += " ]"
+                conn.send(send_data.encode(FORMAT))
+            else:
+                send_data = "OK@RETRIEVE-ERROR " + \
+                    str(addr[1])+" Client does not exist"
+                conn.send(send_data.encode(FORMAT))
+
         elif cmd == "RETRIEVE-ALL":
             files = os.listdir("./db")
             l = len(files)
+
             send_data = "OK@RETRIEVE "+str(addr[1]) + " \n [ "
 
             for client in files:
@@ -56,7 +74,7 @@ def handle_client(conn, addr):  # Handles client Thread (request and response)
                 f = open(filePath, "r")
                 send_data += " \n [ "
                 for x in f:
-                    send_data += str(x)
+                    send_data += (str(x.strip('\n')))
                 send_data += " ] , "
 
             send_data += " ]"
@@ -154,7 +172,7 @@ def handle_client(conn, addr):  # Handles client Thread (request and response)
                 f.write(name+"\t")
                 f.write(IP+"\t")
                 f.write(UDP+"\t")
-                f.write(TCP+"\n")
+                f.write(TCP+"\t\n")
                 f.close()
 
                 # Print hat there is a new connection with the ip and rq#
