@@ -1,8 +1,9 @@
-# COEN366 Project <br />
-CONCORDIA UNIVERISTY<br />
-FALL 2020<br />
+# COEN 366 - Project (FALL 2021)
 
-
-MICHAEL ARABIAN - 40095854<br />
-CONSTANTINE KARELLAS - <br />
-MAX BURAH - 
+<img src="https://fas.concordia.ca/adfs/portal/logo/logo.png?id=728F70A3E333A7E7AB58C4185D855224308D7AA511313D14AFF478183F60D900">
+ 
+ 
+# Team Members
+- Michael Arabian
+- Constantine Karellas
+- Max Burah
