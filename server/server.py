@@ -15,6 +15,7 @@ FORMAT = "utf-8"
 clients = []  # List that stores clients information
 
 SERVER_DATA_PATH = "./"
+CLIENT_NAME = ""
 
 
 def handle_client(conn, addr):  # Handles client request and response
@@ -103,8 +104,13 @@ def handle_client(conn, addr):  # Handles client request and response
                 # Print file received by server
                 print(" 📁 File Received : ", filepath)
                 # Tell client that it was puiblished successfully
-                send_data = "OK@PUBLISHED #"+str(addr[1])
-                conn.send(send_data.encode(FORMAT))
+
+            fileP = "./db/"+str(CLIENT_NAME)+".txt"
+            f = open(fileP, "a")
+            f.write(filepath[2:] + "\t")
+            f.close()
+            send_data = "OK@PUBLISHED #"+str(addr[1])
+            conn.send(send_data.encode(FORMAT))
 
         elif cmd == "REMOVE":  # If the client wants to delete a file from the server
             files = os.listdir(SERVER_DATA_PATH)
@@ -129,6 +135,7 @@ def handle_client(conn, addr):  # Handles client request and response
                 conn.send(send_data.encode(FORMAT))
 
                 name = data[1]  # Store the clients name in name
+                CLIENT_NAME = name
                 IP = data[2]  # Store the clients ip address
                 UDP = data[3]  # Store the clients udp port
                 TCP = data[4]  # Store the clients tcp port
@@ -138,7 +145,7 @@ def handle_client(conn, addr):  # Handles client request and response
                 f.write(name+"\t")
                 f.write(IP+"\t")
                 f.write(UDP+"\t")
-                f.write(TCP+"\t")
+                f.write(TCP+"\n")
                 f.close()
 
                 # Print hat there is a new connection with the ip and rq#
