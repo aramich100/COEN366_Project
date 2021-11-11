@@ -7,7 +7,7 @@ from colorama import Fore, Back, Style
 
 
 IP = socket.gethostbyname('127.0.0.1')  # Setting the IP adress of the socket
-PORT = 4444  # Setting the Port number (might change)
+PORT = 4455  # Setting the Port number (might change)
 ADDR = (IP, PORT)
 SIZE = 1024
 FORMAT = "utf-8"
@@ -34,6 +34,22 @@ def handle_client(conn, addr):  # Handles client request and response
             send_data += "DELETE <filepath>: Delete a file from the server \n"
             send_data += "DISC : Disconnect from the server \n"
             send_data += "HELP : List all the commands. \n"
+            conn.send(send_data.encode(FORMAT))
+
+        elif cmd == "RETRIEVE-ALL":
+            files = os.listdir("./db")
+            l = len(files)
+            send_data = "OK@RETRIEVE "+str(addr[1]) + " \n [ "
+
+            for client in files:
+                filePath = "./db/"+str(client)
+                f = open(filePath, "r")
+                send_data += " \n [ "
+                for x in f:
+                    send_data += str(x)
+                send_data += " ] , "
+
+            send_data += " ]"
             conn.send(send_data.encode(FORMAT))
 
         # List files in server
@@ -119,10 +135,10 @@ def handle_client(conn, addr):  # Handles client request and response
 
                 fileName = "./db/" + name + ".txt"
                 f = open(fileName, "x")
-                f.write(name+"\n")
-                f.write(IP+"\n")
-                f.write(UDP+"\n")
-                f.write(TCP+"\n")
+                f.write(name+"\t")
+                f.write(IP+"\t")
+                f.write(UDP+"\t")
+                f.write(TCP+"\t")
                 f.close()
 
                 # Print hat there is a new connection with the ip and rq#

@@ -84,6 +84,15 @@ def main():
                         if cmd == "OK":
                             client.close()
                             break
+                    elif inInput == "RETRIEVE-ALL":
+                        send_data = "RETRIEVE-ALL"
+                        client.send(send_data.encode(FORMAT))
+
+                        data = client.recv(SIZE).decode(FORMAT)
+                        cmd, msg = data.split("@")
+
+                        if cmd == "OK":
+                            print(msg)
 
                     elif inInput == "PUBLISH":  # Publish a file
 
