@@ -7,7 +7,7 @@ from colorama import Fore, Back, Style
 
 
 IP = socket.gethostbyname('127.0.0.1')  # Setting the IP adress of the socket
-PORT = 4444  # Setting the Port number (might change)
+PORT = 6666  # Setting the Port number (might change)
 ADDR = (IP, PORT)
 SIZE = 1024
 FORMAT = "utf-8"
@@ -44,7 +44,7 @@ def handle_client(conn, addr):  # Handles client Thread (request and response)
             send_data += "DELETE <filepath>: Delete a file from the server \n"
             send_data += "DISC : Disconnect from the server \n"
             send_data += "HELP : List all the commands. \n"
-            conn.send(send_data.encode(FORMAT))
+            conn.sendto(send_data.encode(FORMAT), ADDR)
 
         elif cmd == "RETRIEVE-INFOT":
             files = os.listdir("./db")
@@ -159,7 +159,7 @@ def handle_client(conn, addr):  # Handles client Thread (request and response)
                 # Send to the client that they registred with this unique rq number
                 send_data += "REGISTERED # " + str(addr[1])
                 # Encode the data and send it
-                conn.send(send_data.encode(FORMAT))
+                conn.sendto(send_data.encode(FORMAT), ADDR)
 
                 name = data[1]  # Store the clients name in name
                 CLIENT_NAME = name
@@ -186,7 +186,7 @@ def handle_client(conn, addr):  # Handles client Thread (request and response)
                 send_data = "RD@"  # Send to the client that they are denied and the reson why
                 send_data += "REGISTER-DENIED  # " + \
                     str(addr[1]) + " Clients name is already in use. "
-                conn.send(send_data.encode(FORMAT))
+                conn.sendto(send_data.encode(FORMAT), ADDR)
                 # clients.remove(data[1])
                 break
 
@@ -215,14 +215,14 @@ def main():
     # Connect the server to a socket
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.bind(ADDR)  # Bind the Ip and the Port
-    server.listen()  # Listen for a client
+    # server.listen()  # Listen for a client
     print("[Listening] Server is listening. \n \n")
 
     while 1:
-        conn, addr = server.accept()  # Accepting a client
-        thread = threading.Thread(target=handle_client, args=(
-            conn, addr))  # Making a client a thread
-        thread.start()  # Starting the thread and connecting the client
+        data, addr = server.recvfrom(1024)  # Accepting a client
+        # thread = threading.Thread(target=handle_client, args=(conn, addr))  # Making a client a thread
+        # thread.start()  # Starting the thread and connecting the client
+        print("received message: %s" % data)
 
 
 if __name__ == "__main__":
