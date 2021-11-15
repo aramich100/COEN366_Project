@@ -34,7 +34,7 @@ def main():
         ADR = (IP, TCPPort)  # Adresse Binding
 
         # Creating a socker for client
-        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
         # Forming message to be sent to server
         send_data = "REGISTER"  # Command
@@ -45,10 +45,13 @@ def main():
 
         # Sending message to server
         client.sendto(send_data.encode(FORMAT), ADR)
+        print("Register sent. Waiting..")
 
         # Receving response from server
-        data = client.recvfrom(1024).decode(FORMAT)
+        data, addr = client.recvfrom(1024)
+        data = data.decode(FORMAT)
         cmd, msg = data.split("@")  # Splitting Response : "CMD@MSG"
+        print("Received command")
 
         if cmd == "RD":  # Register Denined
             print(Fore.RED + "\n  " + msg)
