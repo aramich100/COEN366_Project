@@ -16,6 +16,7 @@ clients = []  # List that stores clients information
 
 SERVER_DATA_PATH = "./"
 CLIENT_NAME = ""
+name = ""
 
 
 def checkClient(name):  # Checks if client already exists
@@ -57,11 +58,11 @@ def handle_client(data, addr):  # Handles client Thread (request and response)
             for x in f:
                 send_data += (str(x.strip('\n')))
             send_data += " ]"
-            conn.send(send_data.encode(FORMAT))
+            conn.sendto(send_data.encode(FORMAT), addr)
         else:
             send_data = "OK@RETRIEVE-ERROR " + \
                 str(addr[1])+" Client does not exist"
-            conn.send(send_data.encode(FORMAT))
+            conn.sendto(send_data.encode(FORMAT), addr)
 
     elif cmd == "RETRIEVE-ALL":
         files = os.listdir("./db")
@@ -78,7 +79,7 @@ def handle_client(data, addr):  # Handles client Thread (request and response)
             send_data += " ] , "
 
         send_data += " ]"
-        conn.send(send_data.encode(FORMAT))
+        conn.sendto(send_data.encode(FORMAT), addr)
 
     # List files in server
     elif cmd == "LIST":
@@ -88,68 +89,82 @@ def handle_client(data, addr):  # Handles client Thread (request and response)
             send_data += "The server directory is empty"
         else:
             send_data += "\n".join(f for f in files)
-        conn.send(send_data.encode(FORMAT))
+        conn.sendto(send_data.encode(FORMAT), addr)
 
     elif cmd == "UPLOAD":
         pass
 
     elif cmd == "PUBLISHREJ":
         name = data[1]
-
-        if name in clients:
+        if checkClient(name):
             send_data = "GOOD@"
             send_data += str(addr[1])
-            conn.send(send_data.encode(FORMAT))
+            conn.sendto(send_data.encode(FORMAT), addr)
 
         else:
             send_data = "NOTOK@"
             send_data += str(addr[1])
-
-            conn.send(send_data.encode(FORMAT))
+            conn.sendto(send_data.encode(FORMAT), addr)
             print(" PUBLISH-DENIED #", addr[1])
 
     elif cmd == "REMOVEREJ":
         name = data[1]
 
-        if name in clients:
+        if checkClient(name):
             send_data = "GOOD@"
             send_data += str(addr[1])
-            conn.send(send_data.encode(FORMAT))
+            conn.sendto(send_data.encode(FORMAT), addr)
 
         else:
             send_data = "NOTOK@"
             send_data += str(addr[1])
-            conn.send(send_data.encode(FORMAT))
+            conn.sendto(send_data.encode(FORMAT), addr)
             print(" REMOVE-DENIED #", addr[1])
 
     elif cmd == "PUBLISH":  # If the client wants to send a file to the server
         # Setting the name of the client and the file
-        name, text = data[1], data[2]
-        filepath = os.path.join(SERVER_DATA_PATH, name)
-        with open(filepath, "w") as f:  # opening the file
-            f.write(text)  # writing to a file the text
-            # Print file received by server
-            print(" 📁 File Received : ", filepath)
-            # Tell client that it was puiblished successfully
+        name, fname = data[1], data[2]
+        print(str(data))
+        filepath = os.path.join(SERVER_DATA_PATH, fname)
 
-        fileP = "./db/"+str(CLIENT_NAME)+".txt"
+        print("name is : ", name)
+        fileP = "./db/"+str(name)+".txt"
         f = open(fileP, "a")
         f.write(filepath[2:] + "\t")
         f.close()
         send_data = "OK@PUBLISHED #"+str(addr[1])
-        conn.send(send_data.encode(FORMAT))
+        conn.sendto(send_data.encode(FORMAT), addr)
 
     elif cmd == "REMOVE":  # If the client wants to delete a file from the server
         files = os.listdir(SERVER_DATA_PATH)
         send_data = "OK@"
-        filename = str(data[1])
+        name = str(data[1])
+        filename = str(data[2])
         if len(files) == 0:  # if there are no files in the folder
             send_data += "The server directory is empty"
+            print("145")
+            conn.sendto(send_data.encode(FORMAT), addr)
         else:
-            if filename in files:  # if the file exists, remove it
-                os.remove("./"+filename)
-                send_data += "REMOVED #"+str(addr[1])
-                conn.send(send_data.encode(FORMAT))
+            fileP = "./db/"+str(name)+".txt"
+            print(fileP)
+            f = open(fileP, "r")
+            lines = f.readlines()
+            print(lines)
+            line1 = lines[0]
+            print("line 1 : ", line1)
+            line2 = lines[1]
+            print("line 2 : ", line2)
+            line2 = line2.replace(filename, "")
+            f.close()
+
+            f2 = open(fileP, "w")
+            print("line 2 : ", line2)
+            f2.write(line1)
+            f2.write(line2.lstrip())
+            f2.close()
+            print("156")
+            send_data += "REMOVED " + str(addr[1])
+            conn.sendto(send_data.encode(FORMAT), addr)
 
     elif cmd == "REGISTER":  # If the client command is REGISTER, frist thing the client does
         clientCount += 1  # Increment client count
@@ -192,23 +207,26 @@ def handle_client(data, addr):  # Handles client Thread (request and response)
 
     elif cmd == "DE-REGISTER":  # If client wants to deregister
         clientCount -= 1  # Decrement the client count
-        if name in clients:  # If the name exists in clients list
+        name = data[1]
+        if checkClient(name):  # If the name exists in clients list
             clients.remove(name)  # Remove the name from the list
             send_data = "OK@"
             send_data += "De-Registered successfully"  # What to send back to the user
             name = data[1]
-            print("[DE-REGISTERED] ", str(addr), " ", str(data[1]))
-            conn.send(send_data.encode(FORMAT))
+            filename = name+".txt"
+            print("[DE-REGISTERED] ", str(addr[1]), " ", str(data[1]))
+            os.remove("./db/"+filename)
+            conn.sendto(send_data.encode(FORMAT), addr)
 
         else:  # if the client that wants to deregister enters the wrong name
             print("That client is not connected. Please try again !")
-            send_data = "NO@"
-            conn.send(send_data.encode(FORMAT))
+            #send_data = "NO@"
+            #conn.sendto(send_data.encode(FORMAT), addr)
 
 
 def main():
     # Welcome message for the server
-    print('\033[1m', Fore.CYAN + " \n \n - 💻 - WELCOME SERVER  - 💻 - \n \n")
+    print('\033[1m', Fore.CYAN + " \n \n - 💻 - أهلا بك  - 💻 - \n \n")
     print("[STARTING] Server is starting. ")
     UDP_IP = "127.0.0.1"
     UDP_PORT = 6666
@@ -221,7 +239,6 @@ def main():
         data, addr = conn.recvfrom(1024)
         data = data.decode(FORMAT)  # buffer size is 1024 bytes
         print(str(data) + " / " + str(addr))
-
         thread = threading.Thread(target=handle_client, args=(
             data, addr))  # Making a client a thread
         thread.start()
