@@ -46,20 +46,18 @@ def main(TCPPort, IP, name, FORMAT):
 
             # Sending message to server
             client.sendto(send_data.encode("utf-8"), ADR)
-            print("Register sent. Waiting..")
+            #print("Register sent. Waiting..")
 
             # Receving response from server
             data, addr = client.recvfrom(1024)
             data = data.decode("utf-8")
             cmd, msg = data.split("@")  # Splitting Response : "CMD@MSG"
-            print("Received command")
 
             if cmd == "RD":  # Register Denined
                 print(Fore.RED + "\n  " + msg)
                 print(Style.RESET_ALL)
 
             if cmd == "OK":  # Register OK
-
                 print()
                 print(Fore.GREEN + msg)
                 print(Style.RESET_ALL)
@@ -68,11 +66,9 @@ def main(TCPPort, IP, name, FORMAT):
                 while 1:
 
                     print(" \n Please enter a command. ")
-                    inInput = input("  ⫸    ")
+                    inInput = input("\t⫸    ")
 
                     if inInput == "DE-REGISTER":  # De-Register
-                        name = input("Name :  ")
-
                         # Sending to server
                         send_data = "DE-REGISTER"
                         send_data += "@"+name
@@ -81,7 +77,7 @@ def main(TCPPort, IP, name, FORMAT):
                         # Waiting for response
                         data, addr = client.recvfrom(1024)
                         data = data.decode(FORMAT)
-                        print("data : ", data)
+                        #print("data : ", data)
                         cmd, msg = data.split("@")
                         # If De-Registered was succesfull
                         if cmd == "OK":
@@ -93,9 +89,9 @@ def main(TCPPort, IP, name, FORMAT):
                         # client.send(send_data.encode(FORMAT))
                         client.sendto(send_data.encode(FORMAT), ADR)
 
-                        data = client.recvfrom(1024).decode(FORMAT)
+                        data, addr = client.recvfrom(1024)
+                        data = data.decode(FORMAT)
                         cmd, msg = data.split("@")
-
                         if cmd == "OK":
                             print(msg)
 
@@ -105,17 +101,14 @@ def main(TCPPort, IP, name, FORMAT):
                         # Sending to server
                         send_data += "@"+name
                         client.sendto(send_data.encode(FORMAT), ADR)
-
-                        data = client.recvfrom(1024).decode(FORMAT)
+                        data, addr = client.recvfrom(1024)
+                        data = data.decode(FORMAT)
                         cmd, msg = data.split("@")
 
                         if cmd == "OK":
                             print("\n"+msg)
 
                     elif inInput == "PUBLISH":  # Publish a file
-
-                        name = input("Name : ")
-
                         # Sending to server
                         send_data = "PUBLISHREJ@"+name
                         client.sendto(send_data.encode(FORMAT), ADR)
@@ -149,7 +142,7 @@ def main(TCPPort, IP, name, FORMAT):
                             for p in listOfFiles:
                                 filename = p.split("/")[-1]
                                 send_data = f"{inInput}@{name}@{filename}"
-                                print("sending : ", send_data)
+                                #print("sending : ", send_data)
                                 client.sendto(send_data.encode(FORMAT), ADR)
 
                                 data, addr = client.recvfrom(1024)
@@ -158,11 +151,13 @@ def main(TCPPort, IP, name, FORMAT):
 
                                 if cmd == "OK":
                                     print(msg)
+
+                                else:
+                                    print(msg)
                         else:  # User not in list of clients
                             print("PUBLISH-DENIED", mess)
 
                     elif inInput == "REMOVE":  # Remove
-                        name = input("Name : ")
                         send_data = "REMOVEREJ@"+name
                         client.sendto(send_data.encode(FORMAT), ADR)
                         send_data = ""
@@ -194,7 +189,6 @@ def main(TCPPort, IP, name, FORMAT):
                             for p in listOfFiles:
                                 send_data = "REMOVE@"+name+"@"+str(p)
                                 client.sendto(send_data.encode(FORMAT), ADR)
-                                print("197: ", send_data)
                                 data, addr = client.recvfrom(1024)
                                 data = data.decode(FORMAT)
                                 cmd, msg = data.split("@")
@@ -202,21 +196,72 @@ def main(TCPPort, IP, name, FORMAT):
                                 if cmd == "OK":
                                     print(msg)
 
+                                else:
+                                    print("REMOVE-DENIED #", msg)
+
                         else:
                             print("REMOVE-DENIED #", mess)
 
-                    elif inInput == "LIST":  # Lists available files in server directory
+                    elif inInput == "UPDATE-CONTACT":  # UPDATES CONTACT
+                        updateIP = input("Enter your new IP : ")
+                        updateUDP = input("Enter your new UDP Socket : ")
+                        updateTCP = TCPPort
+                        b = "3"
+                        while((b != "0") and (b != "1")):
+                            b = input(
+                                "\nWould you like to update your TCP Socket? \n You will be disconnected from all existing connectiong. \n 0 (NO) 1 (YES) : ")
 
-                        print()
-                        send_data = "LIST"
+                        if(b == "1"):
+                            updateTCP = input("Enter your new TCP Socket : ")
+
+                        send_data = "UPDATE-CONTACT@" + name+"@" + \
+                            str(updateIP)+"@"+str(updateUDP)+"@"+str(updateTCP)
                         client.sendto(send_data.encode(FORMAT), ADR)
 
-                        data = client.recvfrom(1024).decode(FORMAT)
+                        data, addr = client.recvfrom(1024)
+                        data = data.decode(FORMAT)
                         cmd, msg = data.split("@")
-
                         if cmd == "OK":
-                            print(f"{msg}")
-                        print()
+                            print(msg)
+                        elif cmd == "NOTOK":
+                            print(Fore.RED + "\n SEARCH-ERROR #",
+                                  str(addr[1]), msg)
+                            print(Style.RESET_ALL)
+
+                    elif inInput == "SEARCH-FILE":
+                        fn = input("File to search :  ")
+                        send_data = "SEARCH-FILE@"
+                        send_data += str(fn)
+                        client.sendto(send_data.encode(FORMAT), ADR)
+
+                        data, addr = client.recvfrom(1024)
+                        data = data.decode(FORMAT)
+                        cmd, msg = data.split("@")
+                        if cmd == "OK":
+                            print(msg)
+                        elif cmd == "NOTOK":
+                            print(Fore.RED + "\n SEARCH-ERROR #",
+                                  str(addr[1]), msg)
+                            print(Style.RESET_ALL)
+
+                        elif inInput == "UPDATE-CONTACT":
+                            send_data = "UPDATE-CONTACT"
+                            newIP = input("\tEnter your new IP \t: ")
+                            newUDP = input("\tEnter your new UDP Port \t: ")
+                            newTCP = input("\tEnter your new TCP Port \t: ")
+
+                            send_data += newIP + "@" + newUDP + "@" + newTCP
+                            client.sendto(send_data.encode(FORMAT), ADR)
+
+                            data, addr = client.recvfrom(1024)
+                            data = data.decode(FORMAT)
+                            cmd, msg = data.split("@")
+
+                            if cmd == "OK":
+                                print(msg)
+
+                            elif cmd == "NOTOK":
+                                print("UPDATE-DENIED ")
 
                     elif inInput == "DOWNLOAD":
                         clientIP = input("Enter the desired clients IP:  ")
