@@ -255,26 +255,6 @@ def main(TCPPort, IP, name, FORMAT):
                                   str(addr[1]), msg)
                             print(Style.RESET_ALL)
 
-                        elif inInput == "UPDATE-CONTACT":
-                            send_data = "UPDATE-CONTACT"
-
-                            newIP = input("\tEnter your new IP \t: ")
-                            newUDP = input("\tEnter your new UDP Port \t: ")
-                            newTCP = input("\tEnter your new TCP Port \t: ")
-
-                            send_data += newIP + "@" + newUDP + "@" + newTCP
-                            client.sendto(send_data.encode(FORMAT), ADR)
-
-                            data, addr = client.recvfrom(1024)
-                            data = data.decode(FORMAT)
-                            cmd, msg = data.split("@")
-
-                            if cmd == "OK":
-                                print(msg)
-
-                            elif cmd == "NOTOK":
-                                print("UPDATE-DENIED ")
-
                     elif inInput == "DOWNLOAD":
 
                         clientIP = input("Enter the desired clients IP:  ")

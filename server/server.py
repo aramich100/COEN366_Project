@@ -5,6 +5,8 @@ import string
 
 from colorama import Fore, Back, Style
 
+from pyfiglet import Figlet
+
 
 IP = socket.gethostbyname('127.0.0.1')  # Setting the IP adress of the socket
 PORT = 6666  # Setting the Port number (might change)
@@ -335,7 +337,9 @@ def handle_client(data, addr):  # Handles client Thread (request and response)
 
 def main():
     # Welcome message for the server
-    print('\033[1m', Fore.CYAN + " \n \n - 💻 - أهلا بك  - 💻 - \n \n")
+    #print('\033[1m', Fore.CYAN + " \n \n - 💻 - أهلا بك  - 💻 - \n \n")
+    f = Figlet(font='slant')
+    print(Fore.CYAN + f.renderText('WELCOME SERVER'))
     print("[STARTING] Server is starting. ")
     UDP_IP = "127.0.0.1"
     UDP_PORT = 6666
