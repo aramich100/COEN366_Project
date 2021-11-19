@@ -197,6 +197,48 @@ def handle_client(data, addr):  # Handles client Thread (request and response)
                 send_data += str(addr[1])
                 conn.sendto(send_data.encode(FORMAT), addr)
 
+    elif cmd == "UPDATE-CONTACT":
+        name, new_ip, new_udp, new_tcp = data[1], data[2], data[3], data[4]
+        if(len(name) < 5):
+            line1 = str(name)+"\t\t"+str(new_ip)+"\t" + \
+                str(new_udp)+"\t"+str(new_tcp)+"\t"+str(addr[1])+"\n"
+        else:
+            line1 = str(name)+"\t"+str(new_ip)+"\t"+str(new_udp) + \
+                "\t"+str(new_tcp)+"\t"+str(addr[1])+"\n"
+
+        fileExtension = "./db/"+str(name)+".txt"
+        if checkClient(name):  # Checks if client exists
+            f = open(fileExtension, "r")
+            lines = f.readlines()
+            if(len(lines) > 1):
+                line2 = lines[1]
+                f.close()
+                send_data = "OK@PUBLISHED #"+str(addr[1])
+                f2 = open(fileExtension, "w")
+                f2.write(line1)
+                f2.write(line2)
+                f2.close()
+                send_data = "OK@" + \
+                    str(addr[1])+"\t"+str(name)+"\t"+str(new_ip) + \
+                    "\t"+str(new_udp)+"\t"+str(new_tcp)
+                conn.sendto(send_data.encode(FORMAT), addr)
+
+            elif(len(lines) < 2):
+                f.close()
+                send_data = "OK@PUBLISHED #"+str(addr[1])
+                f2 = open(fileExtension, "w")
+                f2.write(line1)
+                f2.close()
+                send_data = "OK@" + \
+                    str(addr[1])+"\t"+str(name)+"\t"+str(new_ip) + \
+                    "\t"+str(new_udp)+"\t"+str(new_tcp)
+                conn.sendto(send_data.encode(FORMAT), addr)
+
+        else:
+            send_data = "NOT-OK@" + \
+                str(addr[1])+"\t"+str(name)+"\t"+"Client name does not exist"
+            conn.sendto(send_data.encode(FORMAT), addr)
+
     elif cmd == "SEARCH-FILE":
         files = os.listdir("./db")
         l = len(files)
