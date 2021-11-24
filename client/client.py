@@ -20,6 +20,9 @@ UDPPort = 0
 TCPPort = 0
 
 
+def clear(): return os.system('cls')
+
+
 def printGreen(m):
     print()
     print(Fore.GREEN + m)  # Formatting
@@ -42,6 +45,7 @@ def main(TCPPort, IP, name, FORMAT):
             ADR = (IP, UDPPort)  # Adresse Binding
             # Creating a socker for client
             client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            client.settimeout(2)
 
             # Forming message to be sent to server
             send_data = "REGISTER"  # Command
@@ -51,9 +55,14 @@ def main(TCPPort, IP, name, FORMAT):
             send_data += "@"+str(TCPPort)
 
             # Sending message to server
-            client.sendto(send_data.encode("utf-8"), ADR)
+            try:
+                client.sendto(send_data.encode(FORMAT), ADR)
+                data, addr = client.recvfrom(1024)
+            except socket.timeout as e:
+                exit(e)
 
-            data, addr = client.recvfrom(1024)  # Receving response from server
+            # Receving response from server
+
             data = data.decode("utf-8")
             cmd, msg = data.split("@")  # Splitting Response ex) "CMD@MSG"
 
@@ -118,7 +127,12 @@ def main(TCPPort, IP, name, FORMAT):
                     elif inInput == "PUBLISH":  # Publish a file
 
                         send_data = "PUBLISHREJ@"+name
-                        client.sendto(send_data.encode(FORMAT), ADR)
+                        try:
+                            client.sendto(send_data.encode(FORMAT), ADR)
+                            client.settimeout(4)
+                        except socket.timeout:
+                            client.close
+                            break
 
                         # Waiting for response to see if Name is in List of Clients in the server
                         rejInfo, addr = client.recvfrom(1024)
@@ -149,7 +163,13 @@ def main(TCPPort, IP, name, FORMAT):
                                 filename = p.split("/")[-1]
                                 send_data = f"{inInput}@{name}@{filename}"
 
-                                client.sendto(send_data.encode(FORMAT), ADR)
+                                try:
+                                    client.sendto(
+                                        send_data.encode(FORMAT), ADR)
+                                    client.settimeout(4)
+                                except socket.timeout:
+                                    client.close
+                                    break
 
                                 data, addr = client.recvfrom(1024)
                                 data = data.decode(FORMAT)

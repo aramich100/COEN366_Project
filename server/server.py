@@ -151,12 +151,16 @@ def handle_client(data, addr):  # Handles client Thread (request and response)
             f.write(filepath + "\t")
             f.close()
             send_data = "OK@PUBLISHED #"+str(addr[1])
+
             conn.sendto(send_data.encode(FORMAT), addr)
+            conn.settimeout(4)
+
         else:
             print(" [ ERROR ]\tOnly txt files are permitted. ")
             send_data = "NOTOK@ PUBLISH-DENIED #" + \
                 str(addr[1]) + " File type is not supported. "
             conn.sendto(send_data.encode(FORMAT), addr)
+            conn.settimeout(4)
 
     elif cmd == "REMOVE":  # If the client wants to delete a file from the server
         files = os.listdir(SERVER_DATA_PATH)
@@ -283,10 +287,11 @@ def handle_client(data, addr):  # Handles client Thread (request and response)
             send_data += "REGISTERED # " + str(addr[1])
             # Encode the data and send it
             conn.sendto(send_data.encode(FORMAT), addr)
+            conn.settimeout(4)
 
             name = data[1]  # Store the clients name in name
             CLIENT_NAME = name
-            IP = data[2]  # Store the clients ip address
+            IP = str(addr[0])  # Store the clients ip address
             UDP = data[3]  # Store the clients udp port
             TCP = data[4]  # Store the clients tcp port
             REQ = str(addr[1])
@@ -339,20 +344,19 @@ def main():
     # Welcome message for the server
     #print('\033[1m', Fore.CYAN + " \n \n - 💻 - أهلا بك  - 💻 - \n \n")
     f = Figlet(font='slant')
-    print(Fore.CYAN + f.renderText('WELCOME SERVER'))
-    print("[STARTING] Server is starting. ")
+    print(Fore.CYAN + f.renderText('WELCOME FERHAT'))
+    print("[STARTING] Server is starting. \n")
     UDP_IP = "127.0.0.1"
     UDP_PORT = 6666
 
-    conn = socket.socket(socket.AF_INET,  # Internet
-                         socket.SOCK_DGRAM)  # UDP
+    conn = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # UDP
     conn.bind((UDP_IP, UDP_PORT))
 
     while True:
         data, addr = conn.recvfrom(1024)
-        data = data.decode(FORMAT)  # buffer size is 1024 bytes
+        data = data.decode(FORMAT)
         thread = threading.Thread(target=handle_client, args=(
-            data, addr))  # Making a client a thread
+            data, addr))  # Making a client a thread for UDP
         thread.start()
 
 
