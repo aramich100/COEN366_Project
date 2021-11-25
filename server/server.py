@@ -340,6 +340,7 @@ def handle_client(data, addr):  # Handles client Thread (request and response)
             # conn.sendto(send_data.encode(FORMAT), addr)
 
 
+
 def main():
     # Welcome message for the server
     #print('\033[1m', Fore.CYAN + " \n \n - 💻 - أهلا بك  - 💻 - \n \n")
