@@ -18,41 +18,48 @@ FORMAT = "utf-8"  # Text Format
 UDPPort = 0
 TCPPort = 0
 
+
 def clear(): return os.system('cls')
+
 
 def printGreen(m):
     print()
     print(Fore.GREEN + m)  # Formatting
     print(Style.RESET_ALL)
 
-def main(TCPPort, IP, name, FORMAT): # Main Function
-    print('\033[1m', Fore.BLUE + " \n \n - 🍆 - WELCOME CLIENT  - 🍆 - \n \n")
+
+def main(TCPPort, IP, name, FORMAT):  # Main Function
+    print('\033[1m', Fore.BLUE +
+          " \n \n -- WELCOME CLIENT! Enter 'REGISTER' to begin!  -- \n \n")
     print(Style.RESET_ALL)  # Reset text style
 
     while 1:
         print(" Please enter a command. ")  # asking user to input a command
-        inInput = input("  ⫸    ") 
+        inInput = input("  ⫸    ")
 
         if inInput == "REGISTER":  # If user inputs "REGISTER"
-            UDPPort = int(input("\n Servers UDP Port : ")) #storing the udp port entered by the user
+            # storing the udp port entered by the user
+            UDPPort = int(input("\n Servers UDP Port : "))
             ADR = (IP, UDPPort)  # Address Binding
-            client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # Creating a socket for client
+            # Creating a socket for client
+            client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             client.settimeout(2)
 
             # Forming message to be sent to server
             send_data = "REGISTER"  # Command
-            send_data += "@"+name # users name
-            send_data += "@"+str(IP) # users ip
-            send_data += "@"+str(UDPPort) # upd port
-            send_data += "@"+str(TCPPort) # tcp port
+            send_data += "@"+name  # users name
+            send_data += "@"+str(IP)  # users ip
+            send_data += "@"+str(UDPPort)  # upd port
+            send_data += "@"+str(TCPPort)  # tcp port
 
-            try: # Sending message to server
-                client.sendto(send_data.encode(FORMAT), ADR) # sedning the address to the server
+            try:  # Sending message to server
+                # sedning the address to the server
+                client.sendto(send_data.encode(FORMAT), ADR)
                 data, addr = client.recvfrom(1024)
             except socket.timeout as e:
                 exit(e)
 
-            data = data.decode("utf-8") # Receving response from server
+            data = data.decode("utf-8")  # Receving response from server
             cmd, msg = data.split("@")  # Splitting Response ex) "CMD@MSG"
 
             if cmd == "RD":  # Register Denied
@@ -64,14 +71,16 @@ def main(TCPPort, IP, name, FORMAT): # Main Function
                 print(Fore.GREEN + msg)  # Formatting
                 print(Style.RESET_ALL)
 
-                while 1: # Once user is registered, it will loop again waiting for commands.
-                    print(" \n Please enter a command. ") # waiting for nect commands after register
+                while 1:  # Once user is registered, it will loop again waiting for commands.
+                    # waiting for nect commands after register
+                    print(" \n Please enter a command. ")
                     inInput = input("\t⫸    ")
 
                     if inInput == "DE-REGISTER":  # if command is De-Register
                         send_data = "DE-REGISTER"
                         send_data += "@"+name
-                        client.sendto(send_data.encode(FORMAT), ADR) # sending data to server
+                        # sending data to server
+                        client.sendto(send_data.encode(FORMAT), ADR)
 
                         data, addr = client.recvfrom(1024)
                         data = data.decode(FORMAT)
@@ -81,9 +90,10 @@ def main(TCPPort, IP, name, FORMAT): # Main Function
                             client.close()
                             break
 
-                    elif inInput == "RETRIEVE-ALL": # if command is retrive all
+                    elif inInput == "RETRIEVE-ALL":  # if command is retrive all
                         send_data = "RETRIEVE-ALL"
-                        client.sendto(send_data.encode(FORMAT), ADR) # send the command to server
+                        # send the command to server
+                        client.sendto(send_data.encode(FORMAT), ADR)
 
                         data, addr = client.recvfrom(1024)
                         data = data.decode(FORMAT)
@@ -92,10 +102,11 @@ def main(TCPPort, IP, name, FORMAT): # Main Function
                         if cmd == "OK":
                             print(msg)
 
-                    elif inInput == "RETRIEVE-INFOT": # if the command is retrieve-infot
+                    elif inInput == "RETRIEVE-INFOT":  # if the command is retrieve-infot
                         send_data = "RETRIEVE-INFOT"
 
-                        name = input("Name :  ") # Enter name of client info is desired
+                        # Enter name of client info is desired
+                        name = input("Name :  ")
 
                         send_data += "@"+name
                         client.sendto(send_data.encode(FORMAT), ADR)
@@ -112,12 +123,13 @@ def main(TCPPort, IP, name, FORMAT): # Main Function
                         send_data = "PUBLISHREJ@"+name
                         try:
                             client.sendto(send_data.encode(FORMAT), ADR)
-                            client.settimeout(4)
+                            client.settimeout(5)
                         except socket.timeout:
                             client.close
                             break
 
-                        rejInfo, addr = client.recvfrom(1024) # Waiting for response to see if Name is in List of Clients in the server
+                        # Waiting for response to see if Name is in List of Clients in the server
+                        rejInfo, addr = client.recvfrom(1024)
                         rejInfo = rejInfo.decode(FORMAT)
                         cmd, mess = rejInfo.split("@")
 
@@ -126,8 +138,10 @@ def main(TCPPort, IP, name, FORMAT): # Main Function
                             listOfFiles = []
                             fileCount = 0
 
-                            print("Enter the desired file name and extension (file.txt)")
-                            print("Enter 0 when you have completed entering all files.")
+                            print(
+                                "Enter the desired file name and extension (file.txt)")
+                            print(
+                                "Enter 0 when you have completed entering all files.")
 
                             while 1:
                                 fileName = input("/ ")
@@ -146,7 +160,7 @@ def main(TCPPort, IP, name, FORMAT): # Main Function
                                 try:
                                     client.sendto(
                                         send_data.encode(FORMAT), ADR)
-                                    client.settimeout(4)
+                                    client.settimeout(5)
                                 except socket.timeout:
                                     client.close
                                     break
@@ -176,8 +190,10 @@ def main(TCPPort, IP, name, FORMAT): # Main Function
                             listOfFiles = []
                             fileCount = 0
 
-                            print("Enter the desired file name and extension (file.txt)")
-                            print("Enter 0 when you have completed entering all files.")
+                            print(
+                                "Enter the desired file name and extension (file.txt)")
+                            print(
+                                "Enter 0 when you have completed entering all files.")
 
                             while 1:
                                 fileName = input("/ ")
@@ -203,13 +219,14 @@ def main(TCPPort, IP, name, FORMAT): # Main Function
                                 else:
                                     print("REMOVE-DENIED #", msg)
 
-                        else: # if file doesnt exist
+                        else:  # if file doesnt exist
                             print("REMOVE-DENIED #", mess)
 
                     elif inInput == "UPDATE-CONTACT":  # UPDATES CONTACT
-
-                        updateIP = input("Enter your new IP : ") # client enter new ip
-                        updateUDP = input("Enter your new UDP Socket : ") # client enters new udp socket
+                        # client enter new ip
+                        updateIP = input("Enter your new IP : ")
+                        # client enters new udp socket
+                        updateUDP = input("Enter your new UDP Socket : ")
                         updateTCP = TCPPort
 
                         b = " "
@@ -235,11 +252,12 @@ def main(TCPPort, IP, name, FORMAT): # Main Function
                             print(Fore.RED + "\n UPDATE-DENIED #", msg)
                             print(Style.RESET_ALL)
 
-                    elif inInput == "SEARCH-FILE": # if client wants to search for a file
+                    elif inInput == "SEARCH-FILE":  # if client wants to search for a file
                         fn = input("File to search :  ")
 
                         send_data = "SEARCH-FILE@"
-                        send_data += str(fn) # send the file tha wants to be searched
+                        # send the file tha wants to be searched
+                        send_data += str(fn)
                         client.sendto(send_data.encode(FORMAT), ADR)
 
                         data, addr = client.recvfrom(1024)
@@ -248,15 +266,20 @@ def main(TCPPort, IP, name, FORMAT): # Main Function
 
                         if cmd == "OK":
                             print(msg)
-                        elif cmd == "NOTOK": # if the search file didnt work
+                        elif cmd == "NOTOK":  # if the search file didnt work
                             print(Fore.RED + "\n SEARCH-ERROR #",
                                   str(addr[1]), msg)
                             print(Style.RESET_ALL)
 
-                    elif inInput == "DOWNLOAD": # if command is to download something from another peer
-                        clientIP = input("Enter the desired clients IP:  ") # enter the peers ip
-                        clientPort = input("Enter the desired clients TCP Port:  ") # enter the peers tcp port
-                        fileName = input("Enter the file you wish to download:  ") # enter the file you want from the peer
+                    elif inInput == "DOWNLOAD":  # if command is to download something from another peer
+                        # enter the peers ip
+                        clientIP = input("Enter the desired clients IP:  ")
+                        # enter the peers tcp port
+                        clientPort = input(
+                            "Enter the desired clients TCP Port:  ")
+                        # enter the file you want from the peer
+                        fileName = input(
+                            "Enter the file you wish to download:  ")
 
                         ADR = (clientIP, int(clientPort))  # Address Binding
                         FORMAT = "utf-8"  # Text Format
@@ -312,7 +335,6 @@ def handle_client(conn, addr):
 def waitClient(TCPPort, IP):
     ADRC = (IP, TCPPort)
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
     server.bind(ADRC)  # Bind the Ip and the Port
     server.listen()  # Waiting for a TCP connection
 
