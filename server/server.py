@@ -20,16 +20,19 @@ SERVER_DATA_PATH = "./"
 CLIENT_NAME = ""
 name = ""
 
-def checkReq(name, req): # checks if client name and req# match
-    fileP = "./db/"+str(name)+".txt" # getting the database file of the clientname.txt
-    f = open(fileP, "r") # open the file of clientname.txt
-    first_line = f.readline() # reading the file
-    first_line = first_line.split("\t") # splitting the line by tabs
 
-    fname = first_line[0] # the first index in the file is the name of the user
-    freq = first_line[4] # the fifth index is the users RQ#
+def checkReq(name, req):  # checks if client name and req# match
+    # getting the database file of the clientname.txt
+    fileP = "./db/"+str(name)+".txt"
+    f = open(fileP, "r")  # open the file of clientname.txt
+    first_line = f.readline()  # reading the file
+    first_line = first_line.split("\t")  # splitting the line by tabs
 
-    if(fname == name and freq == str(req)): # checking if the clients name and RQ# are the same
+    # the first index in the file is the name of the user
+    fname = first_line[0]
+    freq = first_line[4]  # the fifth index is the users RQ#
+
+    if(fname == name and freq == str(req)):  # checking if the clients name and RQ# are the same
         return True
     return False
 
@@ -37,34 +40,36 @@ def checkReq(name, req): # checks if client name and req# match
 def checkClient(name):  # Checks if client already exists
     fileName = name+".txt"  # name + .txt is the name of the file
     files = os.listdir("./db")  # List of files in directory
-    if fileName in files: # if the name.txt is in the the files list already
+    if fileName in files:  # if the name.txt is in the the files list already
         return True
     else:
         return False
 
 
-def checkTCP(tcp): # checks the clients tcp port
-    files = os.listdir("./db") #files in database directory
-    l = len(files) # number of files
-    for client in files: # for all the clients in the files database
+def checkTCP(tcp):  # checks the clients tcp port
+    files = os.listdir("./db")  # files in database directory
+    l = len(files)  # number of files
+    for client in files:  # for all the clients in the files database
         filePath = "./db/"+str(client)
         f = open(filePath, "r")
-        line = f.read() 
+        line = f.read()
         if str(tcp) in line:
             return True
     return False
 
 
 def handle_client(data, addr):  # Handles client Thread (request and response)
-    conn = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # connecting to the socket port
+    # connecting to the socket port
+    conn = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     clientCount = 0
 
     # Data received from the client as a reponse
     # data = conn.recv(SIZE).decode(FORMAT)
     data = data.split("@")
-    cmd = data[0] # The first thing the client inputs is a command which is stored in cmd
+    # The first thing the client inputs is a command which is stored in cmd
+    cmd = data[0]
 
-    if cmd == "HELP": # if the command is help
+    if cmd == "HELP":  # if the command is help
         send_data = "OK@"  # OK Command to client
         send_data += "LIST: List all the files from the server. \n"
         send_data += "FIND <filepath> : Finds specified file \n"
@@ -73,32 +78,34 @@ def handle_client(data, addr):  # Handles client Thread (request and response)
         send_data += "HELP : List all the commands. \n"
         conn.sendto(send_data.encode(FORMAT), addr)
 
-    elif cmd == "RETRIEVE-INFOT": # if the command is retrieve-infot to get the info of a specific peer
-        files = os.listdir("./db") # stores the files in the database in files list
+    elif cmd == "RETRIEVE-INFOT":  # if the command is retrieve-infot to get the info of a specific peer
+        # stores the files in the database in files list
+        files = os.listdir("./db")
         l = len(files)
-        fileN = str(data[1])+".txt" # data[1] is the name of the client.txt
+        fileN = str(data[1])+".txt"  # data[1] is the name of the client.txt
         name = "./db/"+str(data[1])+".txt"
-        if fileN in files: #if the client exists
-            send_data = "OK@RETRIEVE-INFOT"+str(addr[1]) + " \n [ " # send the peers RQ#
+        if fileN in files:  # if the client exists
+            send_data = "OK@RETRIEVE-INFOT" + \
+                str(addr[1]) + " \n [ "  # send the peers RQ#
             f = open(name, "r")
             for x in f:
-                send_data += (str(x.strip('\n'))) # Send the peers ip and
+                send_data += (str(x.strip('\n')))  # Send the peers ip and
             send_data += " ]"
             conn.sendto(send_data.encode(FORMAT), addr)
-        else: # the peer doesnt exist
+        else:  # the peer doesnt exist
             send_data = "OK@RETRIEVE-ERROR " + \
                 str(addr[1])+" Client does not exist"
             conn.sendto(send_data.encode(FORMAT), addr)
 
-    elif cmd == "RETRIEVE-ALL": # this commands gets all the info about the registered peers
+    elif cmd == "RETRIEVE-ALL":  # this commands gets all the info about the registered peers
         files = os.listdir("./db")
         l = len(files)
 
         send_data = "OK@RETRIEVE " + \
             str(addr[1]) + \
-            " \n-  NAME \t   IP \t\t UDP \t TCP \t REQ \t Published Files   -" # format to send to peers
+            " \n-  NAME \t   IP \t\t UDP \t TCP \t REQ \t Published Files   -"  # format to send to peers
 
-        for client in files: # sending all the info of every peer
+        for client in files:  # sending all the info of every peer
             filePath = "./db/"+str(client)
             f = open(filePath, "r")
             send_data += " \n [ "
@@ -137,21 +144,22 @@ def handle_client(data, addr):  # Handles client Thread (request and response)
 
     elif cmd == "PUBLISH":  # If the client wants to send a file to the server
 
-        name, fname = data[1], data[2] # assigning the name of the file and the file name
-        fileExtension = fname[-3:] 
+        # assigning the name of the file and the file name
+        name, fname = data[1], data[2]
+        fileExtension = fname[-3:]
 
-        if (fileExtension == "txt"): # if the client wants to publish a txt file
+        if (fileExtension == "txt"):  # if the client wants to publish a txt file
             filepath = fname
             fileP = "./db/"+str(name)+".txt"
             f = open(fileP, "a")
-            f.write(filepath + "\t") # write and publish the file
+            f.write(filepath + "\t")  # write and publish the file
             f.close()
             send_data = "OK@PUBLISHED #"+str(addr[1])
 
             conn.sendto(send_data.encode(FORMAT), addr)
             conn.settimeout(4)
 
-        else: # if the user didnt publish a txt file
+        else:  # if the user didnt publish a txt file
             print(" [ ERROR ]\tOnly txt files are permitted. ")
             send_data = "NOTOK@ PUBLISH-DENIED #" + \
                 str(addr[1]) + " File type is not supported. "
@@ -159,16 +167,18 @@ def handle_client(data, addr):  # Handles client Thread (request and response)
             conn.settimeout(4)
 
     elif cmd == "REMOVE":  # If the client wants to delete a file from the server
-        files = os.listdir(SERVER_DATA_PATH) # access the files in the directory
-        name = str(data[1]) 
+        # access the files in the directory
+        files = os.listdir(SERVER_DATA_PATH)
+        name = str(data[1])
         filename = str(data[2])
         if len(files) == 0:  # if there are no files in the folder
             send_data = "NOTOK@"
             send_data += "The server directory is empty"
             print("145")
             conn.sendto(send_data.encode(FORMAT), addr)
-        else: # if the file exists
-            fileP = "./db/"+str(name)+".txt" # getting the file in the directory
+        else:  # if the file exists
+            # getting the file in the directory
+            fileP = "./db/"+str(name)+".txt"
             print(fileP)
             f = open(fileP, "r")
             lines = f.readlines()
@@ -183,7 +193,7 @@ def handle_client(data, addr):  # Handles client Thread (request and response)
                     f2 = open(fileP, "w")
                     print("line 2 : ", line2)
                     f2.write(line1)
-                    f2.write(line2.lstrip()) # removing the lines of the file
+                    f2.write(line2.lstrip())  # removing the lines of the file
                     f2.close()
                     send_data = "OK@"
                     send_data += "REMOVED #" + str(addr[1])
@@ -199,8 +209,9 @@ def handle_client(data, addr):  # Handles client Thread (request and response)
                 send_data += str(addr[1])
                 conn.sendto(send_data.encode(FORMAT), addr)
 
-    elif cmd == "UPDATE-CONTACT": # if the command is for the user to uopdate their contact
-        name, new_ip, new_udp, new_tcp = data[1], data[2], data[3], data[4] #assigning user's info
+    elif cmd == "UPDATE-CONTACT":  # if the command is for the user to uopdate their contact
+        # assigning user's info
+        name, new_ip, new_udp, new_tcp = data[1], data[2], data[3], data[4]
         if(len(name) < 5):
             line1 = str(name)+"\t\t"+str(new_ip)+"\t" + \
                 str(new_udp)+"\t"+str(new_tcp)+"\t"+str(addr[1])+"\n"
@@ -209,7 +220,7 @@ def handle_client(data, addr):  # Handles client Thread (request and response)
                 "\t"+str(new_tcp)+"\t"+str(addr[1])+"\n"
 
         fileExtension = "./db/"+str(name)+".txt"
-        if checkClient(name):  # Checks if client exists 
+        if checkClient(name):  # Checks if client exists
             f = open(fileExtension, "r")
             lines = f.readlines()
             if(len(lines) > 1):
@@ -241,10 +252,10 @@ def handle_client(data, addr):  # Handles client Thread (request and response)
                 str(addr[1])+"\t"+str(name)+"\t"+"Client name does not exist"
             conn.sendto(send_data.encode(FORMAT), addr)
 
-    elif cmd == "SEARCH-FILE": # if the client wants to search for a file
+    elif cmd == "SEARCH-FILE":  # if the client wants to search for a file
         files = os.listdir("./db")
         l = len(files)
-        fname = data[1] # the file name is the index 1 of data
+        fname = data[1]  # the file name is the index 1 of data
 
         send_data = "OK@RETRIEVE #" + \
             str(addr[1]) + \
@@ -292,9 +303,10 @@ def handle_client(data, addr):  # Handles client Thread (request and response)
             TCP = data[4]  # Store the clients tcp port
             REQ = str(addr[1])
 
-            fileName = "./db/" + name + ".txt" # creating a file in the directory with the clients name
+            # creating a file in the directory with the clients name
+            fileName = "./db/" + name + ".txt"
             f = open(fileName, "x")
-            f.write(name) # storing all of the clients info
+            f.write(name)  # storing all of the clients info
             if(len(name) < 5):
                 f.write("\t")
             f.write("\t"+IP+"\t")
@@ -303,7 +315,8 @@ def handle_client(data, addr):  # Handles client Thread (request and response)
             f.write(REQ+"\t\n")
             f.close()
 
-            print(f" 🚨 [ NEW CONNECTION ] {addr[1]} connected. ") # Print hat there is a new connection with the ip and rq#
+            # Print hat there is a new connection with the ip and rq#
+            print(f" 🚨 [ NEW CONNECTION ] {addr[1]} connected. ")
             clientString = str(data[1])
             clients.append(clientString)  # Adds client name to list
 
@@ -334,24 +347,26 @@ def handle_client(data, addr):  # Handles client Thread (request and response)
             # send_data = "NO@"
             # conn.sendto(send_data.encode(FORMAT), addr)
 
+
 def main():
     # Welcome message for the server
-    #print('\033[1m', Fore.CYAN + " \n \n - 💻 - أهلا بك  - 💻 - \n \n")
     f = Figlet(font='slant')
     print(Fore.CYAN + f.renderText('WELCOME FERHAT'))
     print("[STARTING] Server is starting. \n")
-    UDP_IP = "127.0.0.1"
+    UDP_IP = "127.0.0.1"  # Locahokhost for now
+    #UDP_IP = socket.gethostbyname(socket.gethostname())
     UDP_PORT = 6666
 
-    conn = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # UDP connection 
-    conn.bind((UDP_IP, UDP_PORT)) # binding the ip and port 
+    conn = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # UDP connection
+    conn.bind((UDP_IP, UDP_PORT))  # binding the ip and port
 
     while True:
-        data, addr = conn.recvfrom(1024) # can only receive 1024 bytes at a time
+        # can only receive 1024 bytes at a time
+        data, addr = conn.recvfrom(1024)
         data = data.decode(FORMAT)
         thread = threading.Thread(target=handle_client, args=(
             data, addr))  # Making a client a thread for UDP
-        thread.start() 
+        thread.start()
 
 
 if __name__ == "__main__":
