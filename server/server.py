@@ -174,24 +174,24 @@ def handle_client(data, addr):  # Handles client Thread (request and response)
         if len(files) == 0:  # if there are no files in the folder
             send_data = "NOTOK@"
             send_data += "The server directory is empty"
-            print("145")
+            # print("145")
             conn.sendto(send_data.encode(FORMAT), addr)
         else:  # if the file exists
             # getting the file in the directory
             fileP = "./db/"+str(name)+".txt"
-            print(fileP)
+            # print(fileP)
             f = open(fileP, "r")
             lines = f.readlines()
 
             if(len(lines) > 1):
-                print(lines)
+                # print(lines)
                 line1 = lines[0]
                 line2 = lines[1]
                 if(filename in line2):
                     line2 = line2.replace(filename, "")
                     f.close()
                     f2 = open(fileP, "w")
-                    print("line 2 : ", line2)
+                    #print("line 2 : ", line2)
                     f2.write(line1)
                     f2.write(line2.lstrip())  # removing the lines of the file
                     f2.close()
