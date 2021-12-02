@@ -353,8 +353,8 @@ def main():
     f = Figlet(font='slant')
     print(Fore.CYAN + f.renderText('WELCOME FERHAT'))
     print("[STARTING] Server is starting. \n")
-    UDP_IP = "127.0.0.1"  # Locahokhost for now
-    #UDP_IP = socket.gethostbyname(socket.gethostname())
+    # UDP_IP = "127.0.0.1"  # Locahokhost for now
+    UDP_IP = socket.gethostbyname(socket.gethostname())
     UDP_PORT = 6666
 
     conn = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # UDP connection
