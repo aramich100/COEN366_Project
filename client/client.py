@@ -290,8 +290,8 @@ def main(TCPPort, IP, name, FORMAT):  # Main Function
                         send_data = "DOWNLOAD@"
                         send_data += str(fileName)
                         client.send(send_data.encode(FORMAT))
-                        dSIZE = 10000
-                        data = client.recv(dSIZE).decode(FORMAT)
+                        #dSIZE = 10000
+                        data = client.recv(SIZE).decode(FORMAT)
                         data = data.split("@")
 
                         cmd = data[0]
