@@ -302,6 +302,7 @@ def main(TCPPort, IP, name, FORMAT):  # Main Function
                             with open(filepath, "w") as f:  # opening the file
                                 f.write(text)  # writing to a file the text
                                 print(" 📁 File Received : ", filepath)
+                            f.close()
                         else:
                             print(data)
 
