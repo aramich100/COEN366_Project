@@ -349,10 +349,10 @@ if __name__ == "__main__":
     print("\n Welcome Client ! \n")
     name = input("Enter your name :  ")  # User Inputs Name
     IP = input("Enter servers IP :  ")  # User Inputs IP
-    #IP = socket.gethostbyname(socket.gethostname())
+    TCPIP = socket.gethostbyname(socket.gethostname())
     TCPPort = int(input("Enter your TCP Port : "))  # User Inputs TCP Port
     FORMAT = "utf-8"
     thread = threading.Thread(target=waitClient, args=(
-        TCPPort, IP))  # Making a client a thread
+        TCPPort, TCPIP))  # Making a client a thread
     thread.start()
     main(TCPPort, IP, name, FORMAT)
