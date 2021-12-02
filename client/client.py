@@ -106,9 +106,9 @@ def main(TCPPort, IP, name, FORMAT):  # Main Function
                         send_data = "RETRIEVE-INFOT"
 
                         # Enter name of client info is desired
-                        name = input("Name :  ")
+                        riname = input("Name :  ")
 
-                        send_data += "@"+name
+                        send_data += "@"+riname
                         client.sendto(send_data.encode(FORMAT), ADR)
 
                         data, addr = client.recvfrom(1024)
