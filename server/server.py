@@ -351,7 +351,7 @@ def handle_client(data, addr):  # Handles client Thread (request and response)
 def main():
     # Welcome message for the server
     f = Figlet(font='slant')
-    print(Fore.CYAN + f.renderText('WELCOME FERHAT'))
+    print(Fore.CYAN + f.renderText('WELCOME \nDr.FERHAT'))
     print("[STARTING] Server is starting. \n")
     # UDP_IP = "127.0.0.1"  # Locahokhost for now
     UDP_IP = socket.gethostbyname(socket.gethostname())
